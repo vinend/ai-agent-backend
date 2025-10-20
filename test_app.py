@@ -7,14 +7,14 @@ def test_app():
     
     # Test queries
     test_queries = [
-        {"query": "What's the weather today in San Francisco?"},
-        {"query": "What is 42 * 7?"},
-        {"query": "Who is the president of France?"},
+        {"query": "what's looking for the sky in papua new guinea"},
+        {"query": "What is 9 + 10?"},
+        {"query": "Who is the president of Italy right now?"},
         {"query": "What is 15 + 25?"},
         {"query": "How to make a cake?"},
-        {"query": "What's the temperature in Tokyo?"},
+        {"query": "What's the temperature in Cape Town?"},
         {"query": "What is 10 / 4?"},
-        {"query": "Tell me a joke"}
+        {"query": "Tell me a dad joke"}
     ]
     
     print("Testing the AI Agent Backend Application...\n")

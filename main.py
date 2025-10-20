@@ -17,4 +17,12 @@ app, socketio = create_app()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    # Check if running in development or production
+    import os
+    is_development = os.environ.get('FLASK_ENV', 'production') == 'development'
+    
+    if is_development:
+        socketio.run(app, host='0.0.0', port=port, debug=True)
+    else:
+        # For production, allow unsafe Werkzeug
+        socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)

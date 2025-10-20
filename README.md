@@ -279,11 +279,47 @@ The application handles various types of queries with appropriate tool routing:
 ## Error Handling
 
 The application includes comprehensive error handling:
+## Docker Deployment
 
-- Invalid queries return appropriate error messages
-- API failures are caught and handled gracefully
-- Missing API keys result in informative warnings
-- Network errors are managed without crashing the application
+The application can be easily deployed using Docker and Docker Compose.
+
+### Prerequisites
+
+- Docker Engine (version 20.10 or higher)
+- Docker Compose (version 1.28 or higher)
+
+### Building and Running with Docker
+
+1. **Build and run with Docker Compose** (recommended):
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Or build the Docker image manually**:
+   ```bash
+   docker build -t ai-agent-backend .
+   ```
+
+3. **Run the container**:
+   ```bash
+   docker run -p 5000:5000 --env-file .env ai-agent-backend
+   ```
+
+### Environment Variables in Docker
+
+Make sure your `.env` file is in the same directory as the Dockerfile. The docker-compose.yml is configured to mount this file into the container.
+
+### Accessing the Application
+
+Once running, the application will be available at:
+- `http://localhost:5000` (for REST API)
+- WebSocket connections can be established at the same address
+
+### Docker Compose Services
+
+The docker-compose.yml defines:
+- `ai-agent`: Main application service running on port 5000
+- Network: Isolated bridge network for container communication
 
 ## Performance Considerations
 

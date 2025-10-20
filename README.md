@@ -43,7 +43,7 @@ app/
 
 ### Prerequisites
 
-- Python 3.1.3 or higher
+- Python 3.13.7 or higher
 - API keys for Groq and OpenWeatherMap (optional, mock responses available)
 
 ### Setup

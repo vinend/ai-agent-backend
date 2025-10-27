@@ -21,6 +21,7 @@ class MathTool(BaseTool):
         phrases_to_remove = [
             "what is ",
             "what's ",
+            "whats ",
             "calculate ",
             "compute ",
             "solve ",
@@ -30,6 +31,10 @@ class MathTool(BaseTool):
             "give me ",
             "tell me ",
             "find ",
+            "the result ",
+            "the answer ",
+            "of ",
+            "for ",
         ]
         
         for phrase in phrases_to_remove:
@@ -38,8 +43,9 @@ class MathTool(BaseTool):
         # Remove question marks and extra whitespace
         query_lower = query_lower.replace("?", "").strip()
         
-        # Replace 'x' with '*' for multiplication
+        # Replace 'x' with '*' for multiplication (both standalone and adjacent to numbers)
         query_lower = re.sub(r'(\d)\s*x\s*(\d)', r'\1*\2', query_lower)
+        query_lower = query_lower.replace(' x ', '*')
         
         # Replace common word operators
         query_lower = query_lower.replace(" plus ", "+")
@@ -51,7 +57,14 @@ class MathTool(BaseTool):
         query_lower = query_lower.replace(" add ", "+")
         query_lower = query_lower.replace(" subtract ", "-")
         
-        return query_lower.strip()
+        # Remove any remaining non-mathematical words
+        # Keep only digits, operators, parentheses, decimal points, and whitespace
+        expression = re.sub(r'[a-zA-Z]+', '', query_lower)
+        
+        # Clean up extra whitespace
+        expression = ' '.join(expression.split())
+        
+        return expression.strip()
     
     def _safe_eval(self, expression: str) -> float:
         """Safely evaluate a mathematical expression using AST."""
@@ -101,12 +114,20 @@ class MathTool(BaseTool):
             if not expression:
                 return "Could not extract a mathematical expression from the query."
             
+            # Remove all whitespace for processing
+            expression = expression.replace(" ", "")
+            
             # Check if expression contains valid mathematical characters
-            if not re.search(r'[\d+\-*/().^%]', expression):
+            if not re.search(r'\d', expression):
                 return "No valid mathematical expression found in the query."
             
             # Replace '^' with '**' for exponentiation
             expression = expression.replace('^', '**')
+            
+            # Validate that expression only contains allowed characters
+            allowed_chars = set('0123456789+-*/().** ')
+            if not all(c in allowed_chars for c in expression):
+                return f"Error: Invalid characters in expression. Only numbers and operators (+, -, *, /, ^, parentheses) are allowed."
             
             # Evaluate the expression safely
             result = self._safe_eval(expression)
@@ -114,10 +135,14 @@ class MathTool(BaseTool):
             # Format the result
             if isinstance(result, float):
                 # Return integer if result is a whole number
-                if result.is_integer():
+                if result.is_infinite():
+                    return "Error: Result is infinite"
+                elif result != result:  # Check for NaN
+                    return "Error: Result is not a number"
+                elif result.is_integer():
                     return str(int(result))
                 else:
-                    # Round to reasonable prechiision
+                    # Round to reasonable precision
                     return str(round(result, 10))
             else:
                 return str(result)
@@ -127,21 +152,7 @@ class MathTool(BaseTool):
         except ValueError as e:
             return f"Error: {str(e)}"
         except Exception as e:
-            # Fallback: try simple eval (less safe but handles more cases)
-            try:
-                expression = self._extract_expression(query)
-                expression = expression.replace('^', '**')
-                # Only allow mathematical operations
-                allowed_chars = set('0123456789+-*/().** \t')
-                if all(c in allowed_chars for c in expression):
-                    result = eval(expression)
-                    if isinstance(result, float) and result.is_integer():
-                        return str(int(result))
-                    return str(round(result, 10)) if isinstance(result, float) else str(result)
-                else:
-                    return f"Error: Invalid characters in expression"
-            except:
-                return f"Error calculating: {str(e)}"
+            return f"Error calculating: {str(e)}"
     
     async def _arun(self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
         """Asynchronous version of the tool."""

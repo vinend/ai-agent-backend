@@ -1,6 +1,7 @@
 import re
 import ast
 import operator
+import math
 from langchain.tools import BaseTool
 from pydantic import Field
 from typing import Optional, Type
@@ -132,20 +133,20 @@ class MathTool(BaseTool):
             # Evaluate the expression safely
             result = self._safe_eval(expression)
             
+            # Convert to float for consistent handling
+            result = float(result)
+            
             # Format the result
-            if isinstance(result, float):
-                # Return integer if result is a whole number
-                if result.is_infinite():
-                    return "Error: Result is infinite"
-                elif result != result:  # Check for NaN
-                    return "Error: Result is not a number"
-                elif result.is_integer():
-                    return str(int(result))
-                else:
-                    # Round to reasonable precision
-                    return str(round(result, 10))
+            # Check for invalid results
+            if math.isinf(result):
+                return "Error: Result is infinite"
+            elif math.isnan(result):
+                return "Error: Result is not a number"
+            elif result.is_integer():
+                return str(int(result))
             else:
-                return str(result)
+                # Round to reasonable precision
+                return str(round(result, 10))
                 
         except ZeroDivisionError:
             return "Error: Division by zero"
